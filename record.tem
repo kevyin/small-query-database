@@ -1,0 +1,89 @@
+// Your implementation for the record class goes here.
+#include <sstream>
+
+template <class value>
+ostream& operator<<(ostream& out, const Record<value>& r)
+{
+  out << "{" << endl;
+
+  for (typename Record<value>::const_iterator it = r.entries.begin(); it != r.entries.end(); ++it) {
+    out << "  " << it->first << " = " << it->second << endl;
+  }
+  
+  out << "}";
+  string str = " ";
+  TrimString(str);
+  return out;
+}
+
+template <class value>
+istream& operator>>(istream& in, Record<value>& r)
+{
+  
+  //while (in.good() && !in.eof()) {
+    if (in.peek() != '{') { 		// bail if not at record start
+      in.setstate(ios::failbit);  	// set stream failure, so we can detect it
+      return in; 
+    }
+     
+    in.ignore(1024, '\n');
+    while (true) {
+      string line;
+      getline(in, line, '\n');
+      istringstream istr(line.c_str());
+      if (istr.peek() == '}') break;
+      std::pair<string, value> entry;
+      ReadFieldname(istr, entry.first);
+      ReadValue(istr, entry.second);
+        //cout << "pair<attribute : value> = <" << entry.first << " : " 
+         //<< entry.second << ">" << endl;
+      r.entries.insert(make_pair(entry.first, entry.second));
+    }
+  //}
+  return in; 
+}
+
+template <class value>
+bool Record<value>::matchesQuery(const string& attr, DBQueryOperator op,
+                                 const value& want) const 
+{
+  typename entry_type::const_iterator begin, end;
+  if (attr == "*") {
+      begin = entries.begin();
+      end = entries.end();
+  } else {
+      begin = entries.lower_bound(attr);
+      end = entries.upper_bound(attr);
+  }
+
+  for (typename entry_type::const_iterator it = begin; it != end; ++it) {
+    value val = it->second;
+
+    switch (op) {
+      case Equal:       if (val == want) return true; break;
+      case NotEqual:    if (val != want) return true; break;
+      case LessThan:    if (val < want) return true; break;
+      case GreaterThan: if (val > want) return true; break;
+    }
+  }
+    return false;
+}
+inline void ReadFieldname(istream& in, string& fieldname)
+{
+  getline(in, fieldname, '=');
+  TrimString(fieldname);
+}
+
+template <class value>
+inline void ReadValue(istream& in, value& val)
+{
+  in >> val;
+}
+
+template <>
+inline void ReadValue<string>(istream& in, string& val)
+{
+  getline(in, val, '\n');
+  TrimString(val);
+}
+
