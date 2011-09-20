@@ -1,1 +1,95 @@
 // Your implementation for the database class goes here.
+
+template <class value>
+void Database<value>::write(ostream& out, DBScope scope) const 
+{
+  for (typename records_type::const_iterator it = records.begin(); it != records.end(); ++it) {
+    if ((scope == AllRecords) || 
+        (scope == SelectedRecords && it->isSelected()) ) {
+      out << (*it) << endl;
+    } 
+  }
+}
+
+template <class value>
+void Database<value>::read(istream& in) 
+{
+  while (true) {
+    Record<value> rec = Record<value>();
+    in >> rec;
+    if(in.eof()) break;
+    records.push_back(rec);
+  }
+}
+
+template <class value>
+void Database<value>::deleteRecords(DBScope scope) 
+{
+  if (scope == AllRecords) {
+    records.clear();
+    nselected = 0;
+  } else if (scope == SelectedRecords) {
+    for (typename records_type::iterator it = records.begin(); it != records.end(); ++it) {
+      if (it->isSelected()) {
+        records.erase(it);
+        --nselected;
+      }
+    }
+  }
+}
+
+template <class value>
+void Database<value>::selectAll() 
+{
+  for (typename records_type::iterator it = records.begin(); it != records.end(); ++it) {
+    if (!it->isSelected())
+      it->setSelected(true);
+  }
+  nselected = records.size();
+}
+
+template <class value>
+void Database<value>::deselectAll() 
+{
+  for (typename records_type::iterator it = records.begin(); it != records.end(); ++it) {
+    if (it->isSelected())
+      it->setSelected(false);
+  }
+  nselected = 0;
+}
+
+template <class value>
+void Database<value>::select(DBSelectOperation selOp, const string& attr,
+            DBQueryOperator op, const value& val) 
+{  
+  for (typename records_type::iterator it = records.begin(); it != records.end(); ++it) {
+    if (it->matchesQuery(attr, op, val)) {
+    // query matches it->rd
+      switch (selOp) {
+        case Add || Refine:    
+          if (!it->isSelected()) {
+            it->setSelected(true);
+            ++nselected;
+          }
+          break;
+        case Remove: 
+          if (it->isSelected()) --nselected;
+          it->setSelected(false);
+          break;
+        default:
+          break;
+      }
+    } else {
+    // does not match it->rd
+      switch (selOp) {
+        case Refine:
+          if (it->isSelected()) --nselected;
+          it->setSelected(false);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+

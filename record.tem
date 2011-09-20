@@ -1,6 +1,29 @@
 // Your implementation for the record class goes here.
 #include <sstream>
+#include <algorithm>
+#include <functional>
 
+// helper functions
+template <class T>
+inline bool compStrPair(const string a, const pair<string, T> b)
+{
+  return (a < b.first);
+}
+
+template <class T>
+inline bool compPairStr(const pair<string, T> a, const string b)
+{
+  return (a.first < b);
+}
+
+template <class T1, class T2>
+inline bool compPairFirst (const pair<string, T1>& a, const pair<string, T2>& b) 
+{
+  return (a.first < b.first);
+}
+
+
+// Record operations
 template <class value>
 ostream& operator<<(ostream& out, const Record<value>& r)
 {
@@ -20,26 +43,22 @@ template <class value>
 istream& operator>>(istream& in, Record<value>& r)
 {
   
-  //while (in.good() && !in.eof()) {
-    if (in.peek() != '{') { 		// bail if not at record start
-      in.setstate(ios::failbit);  	// set stream failure, so we can detect it
-      return in; 
-    }
-     
-    in.ignore(1024, '\n');
-    while (true) {
-      string line;
-      getline(in, line, '\n');
-      istringstream istr(line.c_str());
-      if (istr.peek() == '}') break;
-      std::pair<string, value> entry;
-      ReadFieldname(istr, entry.first);
-      ReadValue(istr, entry.second);
-        //cout << "pair<attribute : value> = <" << entry.first << " : " 
-         //<< entry.second << ">" << endl;
-      r.entries.insert(make_pair(entry.first, entry.second));
-    }
-  //}
+  if (in.peek() != '{') { 		// bail if not at record start
+    in.setstate(ios::failbit);  	// set stream failure, so we can detect it
+    return in; 
+  }
+   
+  in.ignore(1024, '\n');
+  while (true) {
+    string line;
+    getline(in, line, '\n');
+    istringstream istr(line.c_str());
+    if (istr.peek() == '}') break;
+    std::pair<string, value> entry;
+    ReadFieldname(istr, entry.first);
+    ReadValue(istr, entry.second);
+    r.entries.push_back(entry);
+  }
   return in; 
 }
 
@@ -47,16 +66,25 @@ template <class value>
 bool Record<value>::matchesQuery(const string& attr, DBQueryOperator op,
                                  const value& want) const 
 {
-  typename entry_type::const_iterator begin, end;
+  typename entries_type::const_iterator begin, end;
+  entries_type tmp_entries;  
+
   if (attr == "*") {
-      begin = entries.begin();
-      end = entries.end();
+    begin = entries.begin();
+    end = entries.end();
   } else {
-      begin = entries.lower_bound(attr);
-      end = entries.upper_bound(attr);
+    tmp_entries = entries;  
+    sort(tmp_entries.begin(), tmp_entries.end(), compPairFirst<value, value>);
+
+    begin = entries.begin();
+    //end = entries.end();
+    begin = lower_bound(tmp_entries.begin(), tmp_entries.end(), attr, compPairStr<value>);
+    end = upper_bound(tmp_entries.begin(), tmp_entries.end(), attr, compStrPair<value>);
+    //begin = lower_bound(tmp_entries.begin(), tmp_entries.end(), attr, compPairFirst<value>);
+    //end = upper_bound(tmp_entries.begin(), tmp_entries.end(), attr, compPairFirst<value>);
   }
 
-  for (typename entry_type::const_iterator it = begin; it != end; ++it) {
+  for (typename entries_type::const_iterator it = begin; it != end; ++it) {
     value val = it->second;
 
     switch (op) {
@@ -68,6 +96,7 @@ bool Record<value>::matchesQuery(const string& attr, DBQueryOperator op,
   }
     return false;
 }
+
 inline void ReadFieldname(istream& in, string& fieldname)
 {
   getline(in, fieldname, '=');
@@ -86,4 +115,5 @@ inline void ReadValue<string>(istream& in, string& val)
   getline(in, val, '\n');
   TrimString(val);
 }
+
 

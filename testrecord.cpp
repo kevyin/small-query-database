@@ -13,6 +13,7 @@
 using namespace std;
 
 #include "utility.h"
+#include "fraction.h"
 
 
 template<class Value> 
@@ -44,19 +45,32 @@ BOOST_AUTO_TEST_CASE( constructors ) {
     cout << "finished Constructors" << endl;
 } 
 
-BOOST_AUTO_TEST_CASE( operatorin) {
-    cout << "operator>> and <<" << endl;
-  
+BOOST_AUTO_TEST_CASE( operatorinInt ) {
+    cout << "operator>> and << int" << endl;
     Record<int> rec; 
     ifstream in("db_int");
     assert(in);
-  
     in >> rec;
-
     cout << rec << endl;
-   
 }
 
+BOOST_AUTO_TEST_CASE( operatorinstring) {
+    cout << "operator>> and << string" << endl;
+    Record<string> rec; 
+    ifstream in("db_string");
+    assert(in);
+    in >> rec;
+    cout << rec << endl;
+}
+
+BOOST_AUTO_TEST_CASE( operatorinfract ) {
+    cout << "operator>> and << fract" << endl;
+    Record<Fraction> rec; 
+    ifstream in("db_fract");
+    assert(in);
+    in >> rec;
+    cout << rec << endl;
+}
 BOOST_AUTO_TEST_CASE( test_matchesquery ) {
     cout << "test_matchesQuery" << endl;
 

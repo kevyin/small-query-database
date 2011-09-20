@@ -48,7 +48,10 @@ Makefile.dependencies:: $(DB_SRCS) $(READTEST_SRCS) $(HDRS)
 -include Makefile.dependencies
 
 testrec: record.h record.tem testrecord.cpp
-	$(CXX) $(CPPFLAGS) -DTEST -lboost_unit_test_framework -o testrec record.h testrecord.cpp
+	$(CXX) $(CPPFLAGS) -DTEST -lboost_unit_test_framework -o testrec record.h fraction.cpp testrecord.cpp
+
+testdb: record.h record.tem database.h database.tem testdatabase.cpp
+	$(CXX) $(CPPFLAGS) -DTEST -lboost_unit_test_framework -o testdb record.h database.h testdatabase.cpp
 
 clean : 
 	rm -f *.o a.out core $(PROGS) Makefile.dependencies

@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <map>
 using namespace std;
 
 #include "utility.h"
@@ -34,14 +33,23 @@ template <class value> istream& operator>>(istream& in, Record<value>& r);
 
 template <class value>
 class Record {
+ private:
+  // private types
+  typedef pair<string, value> entry_type;
+  typedef vector<entry_type> entries_type;
+
+  // datamembers
+  bool selected;
+  entries_type entries;
+
  public:
   // types
-  typedef multimap<string, value> entry_type;
-  typedef typename entry_type::iterator iterator;
-  typedef typename entry_type::const_iterator const_iterator;
+  //typedef typename entries_type::value_type value_type
+  typedef typename entries_type::iterator iterator;
+  typedef typename entries_type::const_iterator const_iterator;
 
   // constructors
-  Record<value>() : selected(false) { entries = multimap<string, value>(); } 
+  Record<value>() : selected(false) { entries = entries_type(); } 
 
   // operations
   inline bool isSelected() const { return selected; }
@@ -54,12 +62,8 @@ class Record {
   friend istream& operator>><value>(istream& in, Record<value>& r);
 
   // destructor
-  ~Record() {}; // use default destructors
+  ~Record() {} // use default destructors
  
- private:
-  // datamembers
-  bool selected;
-  entry_type entries;
   
 };
 
