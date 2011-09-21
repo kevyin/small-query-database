@@ -3,6 +3,7 @@
 template <class value>
 void Database<value>::write(ostream& out, DBScope scope) const 
 {
+  if (nselected == 0) out << "No records selected" << endl;
   for (typename records_type::const_iterator it = records.begin(); it != records.end(); ++it) {
     if ((scope == AllRecords) || 
         (scope == SelectedRecords && it->isSelected()) ) {
@@ -29,10 +30,12 @@ void Database<value>::deleteRecords(DBScope scope)
     records.clear();
     nselected = 0;
   } else if (scope == SelectedRecords) {
-    for (typename records_type::iterator it = records.begin(); it != records.end(); ++it) {
+    for (typename records_type::iterator it = records.begin(); it != records.end();) {
       if (it->isSelected()) {
-        records.erase(it);
+        it = records.erase(it);
         --nselected;
+      } else {
+        ++it;
       }
     }
   }
@@ -66,15 +69,14 @@ void Database<value>::select(DBSelectOperation selOp, const string& attr,
     if (it->matchesQuery(attr, op, val)) {
     // query matches it->rd
       switch (selOp) {
-        case Add || Refine:    
-          if (!it->isSelected()) {
-            it->setSelected(true);
-            ++nselected;
-          }
+        case Add:    
+          if (!it->isSelected()) { it->setSelected(true); ++nselected; }
+          break;
+        case Refine:
+          if (!it->isSelected()) { it->setSelected(true); ++nselected; }
           break;
         case Remove: 
-          if (it->isSelected()) --nselected;
-          it->setSelected(false);
+          if (it->isSelected()) { it ->setSelected(false); --nselected; }
           break;
         default:
           break;

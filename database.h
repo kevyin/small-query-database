@@ -8,6 +8,7 @@
 //#include <iostream>
 //#include <string>
 //#include <vector>
+#include <list>
 //using namespace std;
 
 #include "record.h"
@@ -20,7 +21,7 @@ template <class value>
 class Database {
  private:
   // types
-  typedef vector< Record<value> > records_type;
+  typedef list< Record<value> > records_type;
   // datamembers
   int nselected;
   records_type records;
@@ -31,7 +32,7 @@ class Database {
   typedef typename records_type::const_iterator const_iterator;
 
   // constructors
-  Database<value>() : nselected(0) { records = vector< Record<value> >(); }
+  Database<value>() : nselected(0) { records = records_type(); }
 
   // operations
   inline int numRecords() { return records.size(); }

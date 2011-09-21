@@ -75,13 +75,12 @@ bool Record<value>::matchesQuery(const string& attr, DBQueryOperator op,
   } else {
     tmp_entries = entries;  
     sort(tmp_entries.begin(), tmp_entries.end(), compPairFirst<value, value>);
+    for (typename entries_type::const_iterator it = tmp_entries.begin(); 
+         it != tmp_entries.end(); ++it) {
+    }
 
-    begin = entries.begin();
-    //end = entries.end();
     begin = lower_bound(tmp_entries.begin(), tmp_entries.end(), attr, compPairStr<value>);
     end = upper_bound(tmp_entries.begin(), tmp_entries.end(), attr, compStrPair<value>);
-    //begin = lower_bound(tmp_entries.begin(), tmp_entries.end(), attr, compPairFirst<value>);
-    //end = upper_bound(tmp_entries.begin(), tmp_entries.end(), attr, compPairFirst<value>);
   }
 
   for (typename entries_type::const_iterator it = begin; it != end; ++it) {
