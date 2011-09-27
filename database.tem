@@ -72,9 +72,6 @@ void Database<value>::select(DBSelectOperation selOp, const string& attr,
         case Add:    
           if (!it->isSelected()) { it->setSelected(true); ++nselected; }
           break;
-        case Refine:
-          if (!it->isSelected()) { it->setSelected(true); ++nselected; }
-          break;
         case Remove: 
           if (it->isSelected()) { it ->setSelected(false); --nselected; }
           break;
@@ -85,8 +82,7 @@ void Database<value>::select(DBSelectOperation selOp, const string& attr,
     // does not match it->rd
       switch (selOp) {
         case Refine:
-          if (it->isSelected()) --nselected;
-          it->setSelected(false);
+          if (it->isSelected()) { it->setSelected(false); --nselected; }
           break;
         default:
           break;
