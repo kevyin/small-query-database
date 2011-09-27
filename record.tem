@@ -34,8 +34,6 @@ ostream& operator<<(ostream& out, const Record<value>& r)
   }
   
   out << "}";
-  string str = " ";
-  TrimString(str);
   return out;
 }
 
@@ -62,6 +60,15 @@ istream& operator>>(istream& in, Record<value>& r)
   return in; 
 }
 
+/*
+ * Sorts the entries by attribute first and then finds the range of relevant attributes
+ * I realise this may not be the most optimal as sorting is nlogn and therefore 
+ * for small databases comparing all would just take n
+ * However, if the operators (eg. ==,!=,<,>) are worse than O(logn}, there is some
+ * advantage to sorting first
+ *
+ * Just noting that I'm aware this is not best but nlogn vs n is not that much of a difference
+ */
 template <class value>
 bool Record<value>::matchesQuery(const string& attr, DBQueryOperator op,
                                  const value& want) const 
@@ -69,22 +76,19 @@ bool Record<value>::matchesQuery(const string& attr, DBQueryOperator op,
   typename entries_type::const_iterator begin, end;
   entries_type tmp_entries;  
 
-  if (attr == "*") {
+  if (attr == "*") { // search all entries
     begin = entries.begin();
     end = entries.end();
-  } else {
+  } else { // make temporary copy of entries, sort and find a begin/end for the tmp_entries
     tmp_entries = entries;  
     sort(tmp_entries.begin(), tmp_entries.end(), compPairFirst<value, value>);
-    for (typename entries_type::const_iterator it = tmp_entries.begin(); 
-         it != tmp_entries.end(); ++it) {
-    }
 
     begin = lower_bound(tmp_entries.begin(), tmp_entries.end(), attr, compPairStr<value>);
     end = upper_bound(tmp_entries.begin(), tmp_entries.end(), attr, compStrPair<value>);
   }
 
   for (typename entries_type::const_iterator it = begin; it != end; ++it) {
-    value val = it->second;
+    const value& val = it->second;
 
     switch (op) {
       case Equal:       if (val == want) return true; break;
@@ -93,7 +97,7 @@ bool Record<value>::matchesQuery(const string& attr, DBQueryOperator op,
       case GreaterThan: if (val > want) return true; break;
     }
   }
-    return false;
+  return false;
 }
 
 inline void ReadFieldname(istream& in, string& fieldname)

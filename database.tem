@@ -66,20 +66,18 @@ void Database<value>::select(DBSelectOperation selOp, const string& attr,
             DBQueryOperator op, const value& val) 
 {  
   for (typename records_type::iterator it = records.begin(); it != records.end(); ++it) {
-    if (it->matchesQuery(attr, op, val)) {
-    // query matches it->rd
+    if (it->matchesQuery(attr, op, val)) { // query matches 
       switch (selOp) {
         case Add:    
           if (!it->isSelected()) { it->setSelected(true); ++nselected; }
           break;
         case Remove: 
-          if (it->isSelected()) { it ->setSelected(false); --nselected; }
+          if (it->isSelected()) { it->setSelected(false); --nselected; }
           break;
         default:
           break;
       }
-    } else {
-    // does not match it->rd
+    } else { // does not match 
       switch (selOp) {
         case Refine:
           if (it->isSelected()) { it->setSelected(false); --nselected; }
